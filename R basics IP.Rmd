@@ -1,0 +1,342 @@
+---
+title: "Online Ad Analysis"
+author: "Joseph Kirika"
+date: "02/07/2021"
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Defining the Question
+### a) Specifying the Question
+To identify which individuals were most likely to click on an online ad related to a  cryptography course.
+
+### b) Defining the Metric for Success
+To be able to ran thorough data analysis so as to reveal the underlying information on the various characteristics of people who are most likely to click on the ad. Furthermore to carry out analysis that would aid in forming strategies that would used as a tool to capture more target population
+
+### c) Understanding the context
+A Kenyan entrepreneur created an online cryptography course and wanted to advertise it on her blog. She targeted audiences originating from various countries. In the past, she ran ads to advertise a related course on the same blog and collected data in the process. She then wanted to identify which individuals were most likely to click on her ads.
+
+### d) Recording the Experimental Design
+* Reading the dataset
+* Cleanig and dealing with anomalies to ensure that the quality of the data is upto the task
+* Exploring the given dataset using univariate and bivariate techniques
+* Highlighting some of the insights given
+* Attempting to challenge the solutions given
+* Providing some conclusions and recommendations
+
+### e) Data Relevance
+The data relevance ought to be evaluated against the metric of success after analysis.
+The following is a list of variable names describing the dataset given:
+
+* Daily Time Spent on Site
+* Age
+* Area Income
+* Daily Internet Usage
+* Ad Topic Line
+* City	
+* Male
+* Country	
+* Timestamp	
+* Clicked on Ad
+
+
+## Importing And Previewing The Data 
+### Importing the data
+```{r}
+# reading the dataset
+df = read.csv('http://bit.ly/IPAdvertisingData')
+```
+
+### Previewing the data
+```{r}
+# checking the first 6 rows of the dataset
+head(df)
+```
+```{r}
+# checking the last 6 rows of the dataset
+tail(df)
+```
+
+```{r}
+# getting the information of the data frame
+str(df)
+```
+```{r}
+# checking the shape of the dataset
+dim(df)
+```
+## Data Cleaning
+```{r}
+#editing the column names to lowercase 
+names(df) <- tolower(names(df))
+names(df)
+
+```
+
+```{r}
+# checking for the sum of null values in each column
+
+colSums(is.na(df))
+```
+
+```{r}
+# Checking for duplicated data
+df[duplicated(df), ]
+```
+* There are no null values 
+* There are no duplicated values 
+```{r}
+# checking for outliers precisely on the continuous variables
+
+cont_cols <- df[c('daily.time.spent.on.site','age',               'daily.internet.usage')]
+
+boxplot(cont_cols, main='BoxPlots')
+
+```
+```{r}
+# checking outliers for the area outcome
+boxplot(df$area.income,xlab='area.income', main='boxplot')
+```
+
+> * outliers are evident in the area income variable, this may be due to disparities in currencies between different countries
+
+## Exploratory Data Analysis
+### Univariate Analysis
+```{r}
+summary(df)
+```
+> Insight:
+> * The above output shows the various quantiles,the maximum and minimums of the various variables given
+
+```{r}
+#BarChart for gender
+# x-axis values
+clicked <- table(df$clicked.on.ad)
+# plotting the barplot for gender
+
+barplot(clicked,names.arg = c("Did not","Clicked"), col = c("#1b98e0", "#353436"), xlab='Clicked on ad', ylab ='Count', main = ' Proportion Of The Dataset')
+```
+> * The data seemed to be well balanced
+
+```{r}
+#Histogram of age
+hist(df$age,xlim = c(10,70) ,xlab ='Age of Site User', main ='Histogram for Age')
+
+```
+> * The distribution of age is between 15-65 with most people between ages 25 and 40 years
+
+```{r}
+hist(df$daily.time.spent.on.site,xlim = c(20,100), xlab ='Daily Time Spent on Site', main ='Histogram for time spent on site')
+```
+> * seemingly the amount spent on site by most online profiles is about 65 to 85 minutes(assuming the metric here is minutes)
+
+```{r}
+#Histogram of area_income
+hist(df$area.income ,xlab ='Income of Area', main ='Histogram for Income of an Area')
+```
+> * the area income for most online profiles across the different countries is between 50,000/= and 70,000/=
+
+```{r}
+#Histogram of daily_internet_usage
+hist(df$daily.internet.usage ,xlim = c(100,300),xlab ='Daily Internet Usage', main ='Histogram for daily internet usage')
+```
+> * We have a dominant class of internet users between 200 and 245 of the daily internet usage and followed by another class at around 125 of daily internet usage 
+
+```{r}
+#BarChart for gender
+# x-axis values
+gender <- table(df[ , c(7, 10)])
+# plotting the barplot for gender
+
+barplot(gender,names.arg = c("Female","Male"), beside = TRUE, col = c("#1b98e0", "#353436"), xlab='Gender', ylab ='Count', main = 'Gender')
+
+legend("center",                                    # Add legend to barplot
+       legend = c("Did not", "Clicked"),
+       fill = c("#1b98e0", "#353436"))
+```
+> * the bargraph shows that females seems to be well balanced.It is not clear if they are more likely to click on the ad or not.However for the males, they are 'somewhat' less likely to click on the ad
+
+```{r}
+# getting the mode for the dataset
+
+# creating the function for mode
+getmode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+apply(df,2,getmode)
+```
+> * The output above shows the various most repeated values for each variable in the data
+
+```{r}
+# getting the median of the variuos numeric variables
+apply(df[ , c(1:4, 7, 10)],2,median)
+```
+> * The above shows the various medians of the numrical variables
+
+```{r}
+# getting the mean of the variuos numeric variables
+apply(df[ , c(1:4, 7, 10)],2,mean)
+```
+> * The above shows the various means of the numrical variables
+
+```{r}
+# getting the range of the variuos numeric variables
+apply(df[ , c(1:4, 7, 10)],2,range)
+```
+```{r}
+# getting the Inter Quantile Range of the variuos numeric variables
+apply(df[ , c(1:4, 7, 10)],2,IQR)
+```
+```{r}
+# getting the variance of the variuos numeric variables
+apply(df[ , c(1:4, 7, 10)],2,var)
+```
+
+```{r}
+# getting the standaerd deviation of the variuos numeric variables
+apply(df[ , c(1:4, 7, 10)],2,sd)
+```
+
+```{r}
+library(moments)
+# getting the skewness of the variuos numeric variables
+apply(df[ , c(1:4, 7, 10)],2,skewness)
+```
+> perfroming skewness on the various continuous variables, we find out that
+> * 'daily.time.spent.on.site', 'area.income' and 'daily.internet.usage' variables are negatively skewed and that this indicates that the tail of the distribution is on the left and extends towards more negative values
+* 'age' and 'male' variables are positively skewed. This indicates that the tail is on the right side of the distribution, which extends towards more positive values
+
+```{r}
+# getting the kurtosis of the variuos numeric variables
+apply(df[ , c(1:4, 7, 10)],2, kurtosis)
+```
+> * All the continuous variables have a kurtosis less than 3.this implies that it is playkurtic, which means it tends to produce fewer and less extreme outliers than the normal distribution.
+
+```{r}
+library(psych)
+describe(df)
+```
+> * The above output summarises the univariate analysis for the dataset
+
+```{r}
+# top 10 countries that accrue high average income
+
+avg.country = aggregate(df$area.income, by=list(df$country), FUN=mean)
+
+cou.top10<-head(avg.country[order(avg.country$x,decreasing = TRUE), ],10)
+
+barplot(cou.top10$x,main = "countries that accrue high average income",
+        xlab = "area income",
+        #density = 80,
+        las=1,
+        names=cou.top10$Group.1,
+        horiz = TRUE)
+```
+> * the bargraph shows top 10 countries that accrue high average incomes. the first being Jordan followed by Seychelles and Finland
+
+```{r}
+# top 10 cities that accrue high average income
+
+avg.city = aggregate(df$area.income, by=list(df$city), FUN=mean)
+
+city.top10 <- head(avg.city[order(avg.city$x,decreasing = TRUE), ],10)
+
+barplot(cou.top10$x,main = "Cities that accrue high average income",
+        xlab = "area income",
+        #density = 50,
+        las=1,
+        names=city.top10$Group.1,
+        #col = factor(df$clicked.on.ad),
+        #beside = TRUE,
+        horiz = TRUE)
+```
+> * the top 10 cities that accrue high average incomes.
+the first is Barmouth followed by Mataberg and East Ronald
+
+
+### Bivariate Analysis
+```{r}
+ pairs(~  daily.time.spent.on.site + age + area.income + daily.internet.usage , col = factor(df$clicked.on.ad), data = df)
+
+```
+
+```{r}
+cov(df[ , c(1:4, 10)])
+```
+> * As listed above there are varaibles where there are negative and positive covariances.The negative covariances indicate that as one variable increases,the second variable tends to decrease
+* Conversely, the positive covariances indicates the that two variables tend to increase or decrease in tandem.
+
+```{r}
+# creating a correlation matrix
+library('corrplot')
+
+corrplot(cor(df[ , c(1:4, 10)]), method = 'number',type='lower',tl.srt = 0, main="correlation matrix" )
+```
+> * The 'daily internet usage' and 'daily time spent on site' have a negative strong correlation on the 'click on ad' variable.
+* the area income also has a moderate negative correlation on the click on ad variable
+
+```{r}
+# converting the timestamp variable to date type
+df$timestamp=as.Date(df$timestamp)
+```
+### Plotting some timeseries
+```{r}
+library(ggplot2)
+
+
+# aggregating based on average income per a given time 
+#dts <- aggregate(daily.time.spent.on.site ~ timestamp , data=df, mean)
+
+dts <- aggregate(df$area.income, by=list(df$timestamp), FUN=mean)
+#create time series plot
+p <- ggplot(dts, aes(x=Group.1, y=x)) +
+       geom_line()+ scale_x_date(date_labels = "%b %d",date_breaks = "3 week")+ theme(axis.text.x=element_text(angle=50, hjust=1)) + labs(x="Dates", y="income", title=" Average Area Income")
+
+#display time series plot
+p
+```
+> * The average area income registers relatively lower income around mid month 
+* At around January 25, we have a consistent higher income as compared to other months
+
+```{r}
+dts <- aggregate(df$daily.time.spent.on.site, by=list(df$timestamp), FUN=mean)
+#create time series plot
+d <- ggplot(dts, aes(x=Group.1, y=x)) +
+       geom_line()+ scale_x_date(date_labels = "%b %d",date_breaks = "3 week")+ theme(axis.text.x=element_text(angle=50, hjust=1))+ labs(x="Dates", y="Time spent", title="Average Time Spent On Site")
+
+#display time series plot
+d
+```
+>  * At around February 15, we have time spent relatively more compared to any other month
+
+```{r}
+dts <- aggregate(df$daily.internet.usage, by=list(df$timestamp), FUN=mean)
+#create time series plot
+d <- ggplot(dts, aes(x=Group.1, y=x)) +
+       geom_line()+ scale_x_date(date_labels = "%b %d",date_breaks = "3 week")+ theme(axis.text.x=element_text(angle=50, hjust=1)) + labs(x="Dates", y="internet usage", title="Average Daily Internet Usage")
+
+#display time series plot
+d
+```
+> * May registers more internet spent as compared to other months
+
+## Challenging The Solution
+> * Further analysis would help define a better potential customer profile.
+* Having further analysis on the timestamp variable such as the time aspect would aid in getting more insights . 
+* Furthermore, grouping the topics from the ad topic variable so as to be able to properly analyse. 
+and get better insights
+
+## Conclusions and Recommendations
+>* The data seemed to be well balanced.I recommend further analysis and application of Machine learning algorithms in order to create a model that would predict whether an individual with the given features would click on the ad or not
+* Females seem to be well balanced.Thus It is not clear if they are more likely to click on the ad or not.However for the males, they are 'somewhat' less likely to click on the ad 
+* The modal country and city is Czech Republic and Lisamouth respectively
+* I would further recommend countries and cities that accrue more incomeas they would better fund your work.
+* The average area income registers relatively lower income around mid month 
